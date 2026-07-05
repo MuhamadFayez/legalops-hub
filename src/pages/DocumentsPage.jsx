@@ -1,13 +1,24 @@
 import { useMemo, useState } from "react";
-import { Download, ExternalLink, FileText } from "lucide-react";
+import { Download, ExternalLink, FileText, Plus } from "lucide-react";
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
+import FormField from "../components/FormField";
+import Modal from "../components/Modal";
 import { documentTemplates } from "../data/documentTemplates";
-import { getCaseName, matchesSearch } from "../utils/formatters";
+import { getCaseName, matchesSearch, today } from "../utils/formatters";
 
-export default function DocumentsPage({ data }) {
+export default function DocumentsPage({ data, canCreate, onAddDocument }) {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("case-documents");
+  const [isAdding, setIsAdding] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    caseId: data.cases[0]?.id ?? "",
+    type: "مذكرة",
+    version: "v1",
+    status: "معتمد",
+    uploadedAt: today,
+  });
   const rows = useMemo(() => data.documents.map((item) => ({ ...item, caseName: getCaseName(data.cases, item.caseId) })).filter((item) => matchesSearch(item, search)), [data, search]);
   const columns = [
     { key: "name", label: "اسم المستند" },
@@ -36,7 +47,19 @@ export default function DocumentsPage({ data }) {
       </div>
 
       {activeTab === "case-documents" ? (
-        <DataTable title="المستندات" columns={columns} rows={rows} search={search} onSearch={setSearch} />
+        <DataTable
+          title="المستندات"
+          columns={columns}
+          rows={rows}
+          search={search}
+          onSearch={setSearch}
+          action={
+            <button className="btn-primary disabled:cursor-not-allowed disabled:bg-slate-300" disabled={!canCreate} onClick={() => setIsAdding(true)}>
+              <Plus className="h-5 w-5" />
+              إضافة مستند
+            </button>
+          }
+        />
       ) : (
         <section className="surface p-5">
           <div className="mb-5 flex items-center gap-2">
@@ -75,6 +98,56 @@ export default function DocumentsPage({ data }) {
             })}
           </div>
         </section>
+      )}
+
+      {isAdding && (
+        <Modal title="إضافة مستند" onClose={() => setIsAdding(false)}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              onAddDocument(form);
+              setIsAdding(false);
+              setForm((current) => ({ ...current, name: "", version: "v1", uploadedAt: today }));
+            }}
+            className="grid gap-4 md:grid-cols-2"
+          >
+            <FormField label="اسم المستند">
+              <input className="input" required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+            </FormField>
+            <FormField label="القضية المرتبطة">
+              <select className="input" value={form.caseId} onChange={(event) => setForm({ ...form, caseId: event.target.value })}>
+                {data.cases.map((item) => <option key={item.id} value={item.id}>{item.number} - {item.clientName}</option>)}
+              </select>
+            </FormField>
+            <FormField label="النوع">
+              <select className="input" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}>
+                <option>مذكرة</option>
+                <option>عقد</option>
+                <option>إثبات</option>
+                <option>تقرير</option>
+                <option>صك حكم</option>
+              </select>
+            </FormField>
+            <FormField label="الإصدار">
+              <input className="input" required value={form.version} onChange={(event) => setForm({ ...form, version: event.target.value })} />
+            </FormField>
+            <FormField label="الحالة">
+              <select className="input" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
+                <option>معتمد</option>
+                <option>قيد المراجعة</option>
+                <option>ناقص</option>
+                <option>بانتظار تحديث</option>
+              </select>
+            </FormField>
+            <FormField label="تاريخ الرفع">
+              <input className="input" type="date" required value={form.uploadedAt} onChange={(event) => setForm({ ...form, uploadedAt: event.target.value })} />
+            </FormField>
+            <div className="flex justify-end gap-2 md:col-span-2">
+              <button type="button" className="btn-secondary" onClick={() => setIsAdding(false)}>إلغاء</button>
+              <button className="btn-primary">حفظ المستند</button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

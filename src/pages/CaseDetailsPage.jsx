@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import Badge from "../components/Badge";
 import FormField from "../components/FormField";
+import Modal from "../components/Modal";
 import {
   caseJourneyStages,
   getCaseJourneyState,
@@ -58,9 +59,17 @@ function Timeline({ currentStage }) {
   );
 }
 
-export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask, onBack, onUpdateCase, onUpdateHearing }) {
+export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHearing, onAddTask, onBack, onUpdateCase, onUpdateHearing }) {
   const legalCase = data.cases.find((item) => item.id === caseId);
   const [postHearing, setPostHearing] = useState({ hearingId: "", result: "طلب مذكرة", notes: "", dueDate: "2026-07-08" });
+  const [isAddingDocument, setIsAddingDocument] = useState(false);
+  const [documentForm, setDocumentForm] = useState({
+    name: "",
+    type: "تقرير",
+    version: "v1",
+    status: "معتمد",
+    uploadedAt: today,
+  });
 
   if (!legalCase) {
     return (
@@ -77,7 +86,8 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
   const timelineEvents = buildTimeline(data, caseId).slice(0, 8);
   const currentStage = getCaseJourneyState({ legalCase, hearings, tasks, documents });
   const closureChecklist = getClosureChecklist({ hearings, tasks, documents });
-  const canClose = closureChecklist.every((item) => item.done);
+  const isCaseClosed = ["مغلقة", "مغلقة ومؤرشفة", "مكتمل"].includes(legalCase.status);
+  const canClose = closureChecklist.every((item) => item.done) && !isCaseClosed;
   const selectedHearing = hearings.find((item) => item.id === postHearing.hearingId) ?? hearings[0];
   const recommendations = getPostHearingRecommendations(postHearing.result);
 
@@ -126,11 +136,22 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
   }
 
   function closeCase() {
+    if (!canClose) return;
     onUpdateCase(caseId, {
       status: "مغلقة ومؤرشفة",
       lastUpdate: today,
       updates: ["تم إغلاق القضية وأرشفتها بعد اكتمال قائمة التحقق"],
     });
+  }
+
+  function submitDocument(event) {
+    event.preventDefault();
+    onAddDocument({
+      ...documentForm,
+      caseId,
+    });
+    setIsAddingDocument(false);
+    setDocumentForm((current) => ({ ...current, name: "", version: "v1", uploadedAt: today }));
   }
 
   return (
@@ -224,7 +245,7 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
             ))}
           </div>
           <button className="btn-primary mt-4 w-full disabled:cursor-not-allowed disabled:bg-slate-300" disabled={!canClose} onClick={closeCase}>
-            إغلاق القضية وأرشفتها
+            {isCaseClosed ? "القضية مغلقة ومؤرشفة" : "إغلاق القضية وأرشفتها"}
           </button>
           {!canClose && <p className="mt-3 text-xs leading-6 text-slate-500">لا يمكن إغلاق القضية حتى تكتمل قائمة التحقق. يمكن للمدير تجاوز ذلك لاحقًا عند إضافة صلاحيات متقدمة.</p>}
         </Panel>
@@ -252,8 +273,13 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
           </div>
         </Panel>
         <Panel title="المستندات" icon={FileText}>
+          <button className="btn-secondary mb-3 h-10 w-full" onClick={() => setIsAddingDocument(true)}>
+            <Plus className="h-4 w-4" />
+            إضافة مستند للقضية
+          </button>
           <div className="space-y-2">
             {documents.map((item) => <div key={item.id} className="rounded-md bg-slate-50 p-3 text-sm">{item.name} - {item.version} - {item.status}</div>)}
+            {!documents.length && <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">لا توجد مستندات مرتبطة بهذه القضية.</p>}
           </div>
         </Panel>
         <Panel title="التسلسل الزمني" icon={CalendarDays}>
@@ -275,6 +301,41 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
           </ul>
         </Panel>
       </div>
+
+      {isAddingDocument && (
+        <Modal title="إضافة مستند للقضية" onClose={() => setIsAddingDocument(false)}>
+          <form onSubmit={submitDocument} className="grid gap-4 md:grid-cols-2">
+            <FormField label="اسم المستند">
+              <input className="input" required value={documentForm.name} onChange={(event) => setDocumentForm({ ...documentForm, name: event.target.value })} />
+            </FormField>
+            <FormField label="النوع">
+              <select className="input" value={documentForm.type} onChange={(event) => setDocumentForm({ ...documentForm, type: event.target.value })}>
+                <option>مذكرة</option>
+                <option>إثبات</option>
+                <option>تقرير</option>
+                <option>صك حكم</option>
+              </select>
+            </FormField>
+            <FormField label="الإصدار">
+              <input className="input" required value={documentForm.version} onChange={(event) => setDocumentForm({ ...documentForm, version: event.target.value })} />
+            </FormField>
+            <FormField label="الحالة">
+              <select className="input" value={documentForm.status} onChange={(event) => setDocumentForm({ ...documentForm, status: event.target.value })}>
+                <option>معتمد</option>
+                <option>قيد المراجعة</option>
+                <option>ناقص</option>
+              </select>
+            </FormField>
+            <FormField label="تاريخ الرفع">
+              <input className="input" type="date" required value={documentForm.uploadedAt} onChange={(event) => setDocumentForm({ ...documentForm, uploadedAt: event.target.value })} />
+            </FormField>
+            <div className="flex justify-end gap-2 md:col-span-2">
+              <button type="button" className="btn-secondary" onClick={() => setIsAddingDocument(false)}>إلغاء</button>
+              <button className="btn-primary">حفظ المستند</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

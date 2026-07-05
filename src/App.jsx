@@ -91,6 +91,12 @@ export default function App() {
     setData((current) => ({ ...current, hearings: [newHearing, ...current.hearings] }));
   }
 
+  function addDocument(form) {
+    if (!form.caseId) return;
+    const newDocument = { ...form, id: `doc-${Date.now()}` };
+    setData((current) => ({ ...current, documents: [newDocument, ...current.documents] }));
+  }
+
   function addBooking(form) {
     if (!form.caseId || !form.lawyerId) return;
     const newBooking = { ...form, id: `booking-${Date.now()}` };
@@ -193,6 +199,7 @@ export default function App() {
           caseId={selectedCaseId}
           onAddHearing={addHearing}
           onAddTask={addTask}
+          onAddDocument={addDocument}
           onBack={() => setSelectedCaseId(null)}
           onUpdateHearing={updateHearing}
           onUpdateCase={updateCase}
@@ -241,7 +248,7 @@ export default function App() {
       case "clients":
         return <ClientsPage data={data} />;
       case "documents":
-        return <DocumentsPage data={data} />;
+        return <DocumentsPage data={data} canCreate={permissions.canCreate} onAddDocument={addDocument} />;
       case "reports":
         return <ReportsPage data={data} />;
       default:
