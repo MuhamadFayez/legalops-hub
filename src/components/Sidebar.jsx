@@ -2,6 +2,7 @@ import {
   BarChart3,
   BellRing,
   BriefcaseBusiness,
+  CalendarCheck,
   CalendarDays,
   ClipboardList,
   FileArchive,
@@ -13,6 +14,7 @@ import {
 const navItems = [
   { key: "dashboard", label: "لوحة التحكم", icon: Home },
   { key: "cases", label: "القضايا", icon: BriefcaseBusiness },
+  { key: "calendar", label: "التقويم", icon: CalendarCheck },
   { key: "hearings", label: "الجلسات", icon: CalendarDays },
   { key: "tasks", label: "المهام", icon: ClipboardList },
   { key: "notifications", label: "التنبيهات", icon: BellRing },

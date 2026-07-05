@@ -1,4 +1,4 @@
-export const today = "2026-07-04";
+export const today = "2026-07-05";
 
 export function byId(items, id) {
   return items.find((item) => item.id === id);
