@@ -11,7 +11,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Badge from "../components/Badge";
 import FormField from "../components/FormField";
 import Modal from "../components/Modal";
@@ -25,9 +25,9 @@ import {
 import { getEmployeeName, today } from "../utils/formatters";
 import { buildTimeline } from "../utils/timeline";
 
-function Panel({ title, icon: Icon, children, className = "" }) {
+function Panel({ title, icon: Icon, children, className = "", panelRef }) {
   return (
-    <section className={`surface p-5 ${className}`}>
+    <section ref={panelRef} className={`surface scroll-mt-5 p-5 ${className}`}>
       <div className="mb-4 flex items-center gap-2">
         <Icon className="h-5 w-5 text-legal-gold" />
         <h2 className="text-lg font-bold text-legal-navy">{title}</h2>
@@ -37,7 +37,16 @@ function Panel({ title, icon: Icon, children, className = "" }) {
   );
 }
 
-function Timeline({ currentStage }) {
+const stageTargetMap = {
+  intake: "documents",
+  analysis: "risks",
+  preparation: "hearings",
+  followup: "postHearing",
+  judgment: "documents",
+  closure: "closure",
+};
+
+function Timeline({ currentStage, onStageSelect }) {
   return (
     <div className="grid gap-3 xl:grid-cols-6">
       {caseJourneyStages.map((stage, index) => {
@@ -45,14 +54,21 @@ function Timeline({ currentStage }) {
         const isDone = status === "مكتملة";
         const isCurrent = status === "حالية";
         return (
-          <div key={stage.id} className={`rounded-lg border p-4 ${isCurrent ? "border-legal-gold bg-legal-softGold" : isDone ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
+          <button
+            key={stage.id}
+            className={`min-h-40 rounded-lg border p-4 text-right transition hover:-translate-y-0.5 hover:border-legal-gold hover:shadow-panel ${
+              isCurrent ? "border-legal-gold bg-legal-softGold" : isDone ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"
+            }`}
+            onClick={() => onStageSelect(stage.id)}
+            type="button"
+          >
             <div className="flex items-center justify-between gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-legal-navy">{index + 1}</span>
               <Badge value={status} />
             </div>
             <h3 className="mt-3 font-bold text-legal-navy">{stage.title}</h3>
             <p className="mt-2 text-xs leading-6 text-slate-600">{stage.description}</p>
-          </div>
+          </button>
         );
       })}
     </div>
@@ -70,6 +86,17 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
     status: "معتمد",
     uploadedAt: today,
   });
+  const sectionRefs = {
+    postHearing: useRef(null),
+    closure: useRef(null),
+    parties: useRef(null),
+    risks: useRef(null),
+    hearings: useRef(null),
+    tasks: useRef(null),
+    documents: useRef(null),
+    timeline: useRef(null),
+    updates: useRef(null),
+  };
 
   if (!legalCase) {
     return (
@@ -154,6 +181,14 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
     setDocumentForm((current) => ({ ...current, name: "", version: "v1", uploadedAt: today }));
   }
 
+  function scrollToSection(sectionKey) {
+    sectionRefs[sectionKey]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function navigateStage(stageId) {
+    scrollToSection(stageTargetMap[stageId] ?? "timeline");
+  }
+
   return (
     <div className="space-y-5">
       <button className="btn-secondary" onClick={onBack}>
@@ -190,11 +225,30 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
       </section>
 
       <Panel title="رحلة القضية" icon={GitBranch} className="xl:col-span-2">
-        <Timeline currentStage={currentStage} />
+        <p className="mb-4 text-sm text-slate-500">اضغط على أي مرحلة للانتقال إلى الجزء المرتبط بها داخل ملف القضية.</p>
+        <Timeline currentStage={currentStage} onStageSelect={navigateStage} />
+        <div className="mt-4 grid gap-2 md:grid-cols-4">
+          <button className="btn-secondary h-10" onClick={() => scrollToSection("hearings")}>
+            <CalendarDays className="h-4 w-4" />
+            الجلسات
+          </button>
+          <button className="btn-secondary h-10" onClick={() => scrollToSection("tasks")}>
+            <ClipboardList className="h-4 w-4" />
+            المهام
+          </button>
+          <button className="btn-secondary h-10" onClick={() => scrollToSection("documents")}>
+            <FileText className="h-4 w-4" />
+            المستندات
+          </button>
+          <button className="btn-primary h-10" onClick={() => setIsAddingDocument(true)}>
+            <Plus className="h-4 w-4" />
+            إضافة مستند
+          </button>
+        </div>
       </Panel>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-        <Panel title="إجراء ما بعد الجلسة" icon={ClipboardCheck}>
+        <Panel title="إجراء ما بعد الجلسة" icon={ClipboardCheck} panelRef={sectionRefs.postHearing}>
           <form onSubmit={submitPostHearing} className="space-y-4">
             <FormField label="الجلسة">
               <select className="input" value={postHearing.hearingId} onChange={(event) => setPostHearing({ ...postHearing, hearingId: event.target.value })}>
@@ -235,7 +289,7 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
           </form>
         </Panel>
 
-        <Panel title="إغلاق القضية" icon={Flag}>
+        <Panel title="إغلاق القضية" icon={Flag} panelRef={sectionRefs.closure}>
           <div className="space-y-3">
             {closureChecklist.map((item) => (
               <div key={item.id} className={`flex items-center justify-between rounded-lg border p-3 ${item.done ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
@@ -252,27 +306,27 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <Panel title="الأطراف" icon={Users}>
+        <Panel title="الأطراف" icon={Users} panelRef={sectionRefs.parties}>
           <ul className="space-y-2 text-sm">
             {(legalCase.parties ?? []).map((party) => <li key={party} className="rounded-md bg-slate-50 p-3">{party}</li>)}
           </ul>
         </Panel>
-        <Panel title="المخاطر" icon={AlertTriangle}>
+        <Panel title="المخاطر" icon={AlertTriangle} panelRef={sectionRefs.risks}>
           <ul className="space-y-2 text-sm">
             {(legalCase.risks ?? []).map((risk) => <li key={risk} className="rounded-md bg-red-50 p-3 text-red-700">{risk}</li>)}
           </ul>
         </Panel>
-        <Panel title="الجلسات" icon={CalendarDays}>
+        <Panel title="الجلسات" icon={CalendarDays} panelRef={sectionRefs.hearings}>
           <div className="space-y-2">
             {hearings.map((item) => <div key={item.id} className="rounded-md bg-slate-50 p-3 text-sm">{item.date} - {item.time} | <Badge value={item.preparation} /></div>)}
           </div>
         </Panel>
-        <Panel title="المهام المرتبطة" icon={ClipboardList}>
+        <Panel title="المهام المرتبطة" icon={ClipboardList} panelRef={sectionRefs.tasks}>
           <div className="space-y-2">
             {tasks.map((item) => <div key={item.id} className="flex items-center justify-between rounded-md bg-slate-50 p-3 text-sm"><span>{item.title}</span><Badge value={item.status} /></div>)}
           </div>
         </Panel>
-        <Panel title="المستندات" icon={FileText}>
+        <Panel title="المستندات" icon={FileText} panelRef={sectionRefs.documents}>
           <button className="btn-secondary mb-3 h-10 w-full" onClick={() => setIsAddingDocument(true)}>
             <Plus className="h-4 w-4" />
             إضافة مستند للقضية
@@ -282,7 +336,7 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
             {!documents.length && <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">لا توجد مستندات مرتبطة بهذه القضية.</p>}
           </div>
         </Panel>
-        <Panel title="التسلسل الزمني" icon={CalendarDays}>
+        <Panel title="التسلسل الزمني" icon={CalendarDays} panelRef={sectionRefs.timeline}>
           <div className="space-y-3">
             {timelineEvents.map((event) => (
               <div key={event.id} className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
@@ -295,7 +349,7 @@ export default function CaseDetailsPage({ data, caseId, onAddDocument, onAddHear
             ))}
           </div>
         </Panel>
-        <Panel title="سجل التحديثات" icon={ClipboardList}>
+        <Panel title="سجل التحديثات" icon={ClipboardList} panelRef={sectionRefs.updates}>
           <ul className="space-y-2 text-sm">
             {(legalCase.updates ?? []).map((update) => <li key={update} className="rounded-md bg-slate-50 p-3">{update}</li>)}
           </ul>
