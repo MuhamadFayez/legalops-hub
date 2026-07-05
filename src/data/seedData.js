@@ -74,10 +74,11 @@ export const cases = [
 ];
 
 export const hearings = [
-  { id: "hear-1", caseId: "case-1", date: "2026-07-04", time: "10:30", court: "المحكمة التجارية بالرياض", lawyerId: "emp-2", preparation: "جاهز", result: "لم تعقد بعد" },
-  { id: "hear-2", caseId: "case-4", date: "2026-07-04", time: "13:00", court: "محكمة الأحوال الشخصية بالرياض", lawyerId: "emp-2", preparation: "بحاجة مراجعة", result: "لم تعقد بعد" },
-  { id: "hear-3", caseId: "case-2", date: "2026-07-07", time: "09:15", court: "المحكمة العمالية بجدة", lawyerId: "emp-3", preparation: "قيد التحضير", result: "لم تعقد بعد" },
-  { id: "hear-4", caseId: "case-3", date: "2026-07-09", time: "11:00", court: "المحكمة العامة بالدمام", lawyerId: "emp-1", preparation: "جاهز", result: "بانتظار تقرير الخبير" },
+  { id: "hear-1", caseId: "case-1", date: "2026-07-04", time: "10:30", court: "المحكمة التجارية بالرياض", lawyerId: "emp-2", preparation: "جاهز", result: "لم تعقد بعد", hearingType: "جلسة" },
+  { id: "hear-2", caseId: "case-4", date: "2026-07-04", time: "13:00", court: "محكمة الأحوال الشخصية بالرياض", lawyerId: "emp-2", preparation: "بحاجة مراجعة", result: "لم تعقد بعد", hearingType: "جلسة" },
+  { id: "hear-3", caseId: "case-2", date: "2026-07-07", time: "09:15", court: "المحكمة العمالية بجدة", lawyerId: "emp-3", preparation: "قيد التحضير", result: "لم تعقد بعد", hearingType: "جلسة" },
+  { id: "hear-4", caseId: "case-3", date: "2026-07-09", time: "11:00", court: "المحكمة العامة بالدمام", lawyerId: "emp-1", preparation: "جاهز", result: "بانتظار تقرير الخبير", hearingType: "جلسة" },
+  { id: "hear-booking-2", caseId: "case-4", date: "2026-07-06", time: "16:00", court: "عن بعد", lawyerId: "emp-2", preparation: "قيد التحضير", result: "تثبيت المستندات المطلوبة قبل الجلسة.", hearingType: "اجتماع", bookingId: "booking-2" },
 ];
 
 export const tasks = [
@@ -104,6 +105,38 @@ export const documents = [
   { id: "doc-5", name: "مذكرة الرد", caseId: "case-4", type: "مذكرة", version: "v1", status: "معتمد", uploadedAt: "2026-07-03" },
 ];
 
+export const bookings = [
+  {
+    id: "booking-1",
+    caseId: "case-1",
+    type: "مناقشة",
+    title: "مناقشة استراتيجية الرد",
+    date: "2026-07-08",
+    time: "12:00",
+    location: "غرفة الاجتماعات الرئيسية",
+    requesterId: "emp-4",
+    lawyerId: "emp-2",
+    status: "بانتظار الموافقة",
+    notes: "مراجعة نقاط القوة والمخاطر قبل تسليم المذكرة.",
+    createdAt: "2026-07-05",
+  },
+  {
+    id: "booking-2",
+    caseId: "case-4",
+    type: "اجتماع",
+    title: "اجتماع تحضيري مع العميل",
+    date: "2026-07-06",
+    time: "16:00",
+    location: "عن بعد",
+    requesterId: "emp-5",
+    lawyerId: "emp-2",
+    status: "معتمد",
+    notes: "تثبيت المستندات المطلوبة قبل الجلسة.",
+    createdAt: "2026-07-04",
+    hearingId: "hear-booking-2",
+  },
+];
+
 export const initialData = {
   employees,
   cases,
@@ -111,4 +144,5 @@ export const initialData = {
   tasks,
   clients,
   documents,
+  bookings,
 };

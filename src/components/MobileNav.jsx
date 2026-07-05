@@ -4,6 +4,8 @@ const items = [
   ["dashboard", "الرئيسية"],
   ["cases", "القضايا"],
   ["calendar", "التقويم"],
+  ["timeline", "التسلسل"],
+  ["bookings", "الحجوزات"],
   ["tasks", "المهام"],
   ["notifications", "التنبيهات"],
   ["governance", "الحوكمة"],

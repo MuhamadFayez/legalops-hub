@@ -22,6 +22,7 @@ import {
   getStageStatus,
 } from "../utils/caseJourney";
 import { getEmployeeName, today } from "../utils/formatters";
+import { buildTimeline } from "../utils/timeline";
 
 function Panel({ title, icon: Icon, children, className = "" }) {
   return (
@@ -73,6 +74,7 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
   const hearings = data.hearings.filter((item) => item.caseId === caseId);
   const tasks = data.tasks.filter((item) => item.caseId === caseId);
   const documents = data.documents.filter((item) => item.caseId === caseId);
+  const timelineEvents = buildTimeline(data, caseId).slice(0, 8);
   const currentStage = getCaseJourneyState({ legalCase, hearings, tasks, documents });
   const closureChecklist = getClosureChecklist({ hearings, tasks, documents });
   const canClose = closureChecklist.every((item) => item.done);
@@ -252,6 +254,19 @@ export default function CaseDetailsPage({ data, caseId, onAddHearing, onAddTask,
         <Panel title="المستندات" icon={FileText}>
           <div className="space-y-2">
             {documents.map((item) => <div key={item.id} className="rounded-md bg-slate-50 p-3 text-sm">{item.name} - {item.version} - {item.status}</div>)}
+          </div>
+        </Panel>
+        <Panel title="التسلسل الزمني" icon={CalendarDays}>
+          <div className="space-y-3">
+            {timelineEvents.map((event) => (
+              <div key={event.id} className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-legal-navy">{event.title}</span>
+                  <Badge value={event.type} />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">{event.date}{event.time ? ` - ${event.time}` : ""} | {event.owner}</p>
+              </div>
+            ))}
           </div>
         </Panel>
         <Panel title="سجل التحديثات" icon={ClipboardList}>

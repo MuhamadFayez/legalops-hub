@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import MobileNav from "./components/MobileNav";
 import Sidebar from "./components/Sidebar";
 import { roles } from "./data/seedData";
+import BookingsPage from "./pages/BookingsPage";
 import CalendarPage from "./pages/CalendarPage";
 import CaseDetailsPage from "./pages/CaseDetailsPage";
 import CasesPage from "./pages/CasesPage";
@@ -15,6 +16,7 @@ import GovernancePage from "./pages/GovernancePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ReportsPage from "./pages/ReportsPage";
 import TasksPage from "./pages/TasksPage";
+import TimelinePage from "./pages/TimelinePage";
 import { today } from "./utils/formatters";
 import { loadLegalOpsData, saveLegalOpsData } from "./utils/storage";
 
@@ -22,6 +24,8 @@ const pageMeta = {
   dashboard: ["لوحة التحكم", "مؤشرات تشغيلية لحالة المكتب اليومية."],
   cases: ["القضايا", "إدارة القضايا ومتابعة درجات الخطورة والتحديثات."],
   calendar: ["التقويم", "تقويم موحد للجلسات والمهام واستحقاقات القضايا مع ربط Google Calendar."],
+  timeline: ["التسلسل الزمني", "عرض زمني موحد لأحداث القضايا والجلسات والمهام والحجوزات."],
+  bookings: ["الحجوزات", "طلبات اجتماع أو مناقشة مع اعتماد وربط تلقائي بجدول الجلسات العام."],
   governance: ["الحوكمة", "إدارة الصلاحيات وسياسات SLA والتصعيد قبل ربط التخزين السحابي."],
   caseDetails: ["تفاصيل القضية", "ملف موحد للجلسات والمهام والمستندات والمخاطر."],
   hearings: ["الجلسات", "جدولة الجلسات وربطها بالقضايا والمحامين."],
@@ -51,6 +55,7 @@ export default function App() {
     const managerRoles = ["مدير المكتب", "محامي رئيسي"];
     return {
       canCreate: managerRoles.includes(activeRole),
+      canApproveBookings: managerRoles.includes(activeRole),
       canUpdateTasks: activeRole !== "سكرتير قانوني",
     };
   }, [activeRole]);
@@ -82,8 +87,50 @@ export default function App() {
 
   function addHearing(form) {
     if (!form.caseId) return;
-    const newHearing = { ...form, id: `hear-${Date.now()}` };
+    const newHearing = { hearingType: "جلسة", ...form, id: `hear-${Date.now()}` };
     setData((current) => ({ ...current, hearings: [newHearing, ...current.hearings] }));
+  }
+
+  function addBooking(form) {
+    if (!form.caseId || !form.lawyerId) return;
+    const newBooking = { ...form, id: `booking-${Date.now()}` };
+    setData((current) => ({ ...current, bookings: [newBooking, ...(current.bookings ?? [])] }));
+  }
+
+  function approveBooking(bookingId) {
+    setData((current) => {
+      const booking = (current.bookings ?? []).find((item) => item.id === bookingId);
+      if (!booking || booking.status === "معتمد") return current;
+
+      const hearingId = `hear-${Date.now()}`;
+      const linkedHearing = {
+        id: hearingId,
+        caseId: booking.caseId,
+        date: booking.date,
+        time: booking.time,
+        court: booking.location,
+        lawyerId: booking.lawyerId,
+        preparation: "قيد التحضير",
+        result: booking.notes || "تم إنشاؤها من طلب حجز معتمد",
+        hearingType: booking.type,
+        bookingId: booking.id,
+      };
+
+      return {
+        ...current,
+        bookings: (current.bookings ?? []).map((item) =>
+          item.id === bookingId ? { ...item, status: "معتمد", approvedAt: today, hearingId } : item
+        ),
+        hearings: [linkedHearing, ...current.hearings],
+      };
+    });
+  }
+
+  function rejectBooking(bookingId) {
+    setData((current) => ({
+      ...current,
+      bookings: (current.bookings ?? []).map((item) => (item.id === bookingId ? { ...item, status: "مرفوض", rejectedAt: today } : item)),
+    }));
   }
 
   function updateHearing(hearingId, changes) {
@@ -158,6 +205,18 @@ export default function App() {
         return <CasesPage data={data} canCreate={permissions.canCreate} onAddCase={addCase} onOpenCase={setSelectedCaseId} />;
       case "calendar":
         return <CalendarPage data={data} onOpenCase={setSelectedCaseId} />;
+      case "timeline":
+        return <TimelinePage data={data} onOpenCase={setSelectedCaseId} />;
+      case "bookings":
+        return (
+          <BookingsPage
+            data={data}
+            canApprove={permissions.canApproveBookings}
+            onAddBooking={addBooking}
+            onApproveBooking={approveBooking}
+            onRejectBooking={rejectBooking}
+          />
+        );
       case "governance":
         return <GovernancePage data={data} roles={roles} />;
       case "hearings":

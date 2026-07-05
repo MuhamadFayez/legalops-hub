@@ -11,12 +11,13 @@ export default function HearingsPage({ data, onAddHearing, canCreate }) {
   const [isAdding, setIsAdding] = useState(false);
   const [form, setForm] = useState({ caseId: data.cases[0]?.id ?? "", date: "2026-07-10", time: "10:00", court: "", lawyerId: data.employees[0]?.id ?? "", preparation: "قيد التحضير", result: "لم تعقد بعد" });
 
-  const enriched = useMemo(() => data.hearings.map((item) => ({ ...item, caseName: getCaseName(data.cases, item.caseId), lawyer: getEmployeeName(data.employees, item.lawyerId) })), [data]);
+  const enriched = useMemo(() => data.hearings.map((item) => ({ ...item, hearingType: item.hearingType ?? "جلسة", caseName: getCaseName(data.cases, item.caseId), lawyer: getEmployeeName(data.employees, item.lawyerId) })), [data]);
   const rows = enriched.filter((item) => matchesSearch(item, search));
 
   const columns = [
     { key: "date", label: "التاريخ" },
     { key: "time", label: "الوقت" },
+    { key: "hearingType", label: "النوع", render: (row) => <Badge value={row.hearingType} /> },
     { key: "caseName", label: "اسم القضية" },
     { key: "court", label: "المحكمة" },
     { key: "lawyer", label: "المحامي المسؤول" },

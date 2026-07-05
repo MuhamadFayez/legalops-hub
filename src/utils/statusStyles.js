@@ -20,6 +20,17 @@ const statusMap = {
   "معتمد": "bg-emerald-50 text-emerald-700 border-emerald-200",
   "قيد المراجعة": "bg-amber-50 text-amber-700 border-amber-200",
   "ناقص": "bg-red-50 text-red-700 border-red-200",
+  "جلسة": "bg-blue-50 text-blue-700 border-blue-200",
+  "اجتماع": "bg-indigo-50 text-indigo-700 border-indigo-200",
+  "مناقشة": "bg-purple-50 text-purple-700 border-purple-200",
+  "قضية": "bg-slate-50 text-slate-700 border-slate-200",
+  "مهمة": "bg-amber-50 text-amber-700 border-amber-200",
+  "مستند": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "بانتظار الموافقة": "bg-amber-50 text-amber-700 border-amber-200",
+  "معتمد": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "مرفوض": "bg-red-50 text-red-700 border-red-200",
+  "مرتبط بالجلسات": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "غير مرتبط": "bg-slate-50 text-slate-700 border-slate-200",
 };
 
 export function badgeClass(value) {
