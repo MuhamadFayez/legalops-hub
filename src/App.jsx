@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import DocumentsPage from "./pages/DocumentsPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import HearingsPage from "./pages/HearingsPage";
+import GovernancePage from "./pages/GovernancePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ReportsPage from "./pages/ReportsPage";
 import TasksPage from "./pages/TasksPage";
@@ -21,6 +22,7 @@ const pageMeta = {
   dashboard: ["لوحة التحكم", "مؤشرات تشغيلية لحالة المكتب اليومية."],
   cases: ["القضايا", "إدارة القضايا ومتابعة درجات الخطورة والتحديثات."],
   calendar: ["التقويم", "تقويم موحد للجلسات والمهام واستحقاقات القضايا مع ربط Google Calendar."],
+  governance: ["الحوكمة", "إدارة الصلاحيات وسياسات SLA والتصعيد قبل ربط التخزين السحابي."],
   caseDetails: ["تفاصيل القضية", "ملف موحد للجلسات والمهام والمستندات والمخاطر."],
   hearings: ["الجلسات", "جدولة الجلسات وربطها بالقضايا والمحامين."],
   tasks: ["المهام", "لوحة كانبان لتوزيع العمل ومراقبة المتأخرات."],
@@ -156,6 +158,8 @@ export default function App() {
         return <CasesPage data={data} canCreate={permissions.canCreate} onAddCase={addCase} onOpenCase={setSelectedCaseId} />;
       case "calendar":
         return <CalendarPage data={data} onOpenCase={setSelectedCaseId} />;
+      case "governance":
+        return <GovernancePage data={data} roles={roles} />;
       case "hearings":
         return <HearingsPage data={data} canCreate={permissions.canCreate} onAddHearing={addHearing} />;
       case "tasks":

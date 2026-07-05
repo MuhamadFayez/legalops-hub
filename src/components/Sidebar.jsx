@@ -7,6 +7,7 @@ import {
   ClipboardList,
   FileArchive,
   Home,
+  ShieldCheck,
   Users,
   UserRound,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const navItems = [
   { key: "hearings", label: "الجلسات", icon: CalendarDays },
   { key: "tasks", label: "المهام", icon: ClipboardList },
   { key: "notifications", label: "التنبيهات", icon: BellRing },
+  { key: "governance", label: "الحوكمة", icon: ShieldCheck },
   { key: "employees", label: "الموظفون", icon: Users },
   { key: "clients", label: "العملاء", icon: UserRound },
   { key: "documents", label: "المستندات", icon: FileArchive },

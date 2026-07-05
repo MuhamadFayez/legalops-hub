@@ -12,6 +12,14 @@ const statusMap = {
   "جاهز": "bg-emerald-50 text-emerald-700 border-emerald-200",
   "بحاجة مراجعة": "bg-red-50 text-red-700 border-red-200",
   "قيد التحضير": "bg-blue-50 text-blue-700 border-blue-200",
+  "ضمن الوقت": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "قريب من الانتهاء": "bg-amber-50 text-amber-700 border-amber-200",
+  "متأخر ومصعّد": "bg-purple-50 text-purple-700 border-purple-200",
+  "مسودة": "bg-slate-50 text-slate-700 border-slate-200",
+  "تم الإرسال": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "معتمد": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "قيد المراجعة": "bg-amber-50 text-amber-700 border-amber-200",
+  "ناقص": "bg-red-50 text-red-700 border-red-200",
 };
 
 export function badgeClass(value) {

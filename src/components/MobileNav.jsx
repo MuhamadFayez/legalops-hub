@@ -4,9 +4,9 @@ const items = [
   ["dashboard", "الرئيسية"],
   ["cases", "القضايا"],
   ["calendar", "التقويم"],
-  ["hearings", "الجلسات"],
   ["tasks", "المهام"],
   ["notifications", "التنبيهات"],
+  ["governance", "الحوكمة"],
   ["reports", "التقارير"],
 ];
 
