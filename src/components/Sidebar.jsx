@@ -3,8 +3,6 @@ import {
   BellRing,
   BriefcaseBusiness,
   CalendarCheck,
-  CalendarClock,
-  CalendarDays,
   ClipboardList,
   FileArchive,
   Home,
@@ -16,17 +14,14 @@ import {
 const navItems = [
   { key: "dashboard", label: "لوحة التحكم", icon: Home },
   { key: "cases", label: "القضايا", icon: BriefcaseBusiness },
-  { key: "calendar", label: "التقويم", icon: CalendarCheck },
-  { key: "timeline", label: "التسلسل الزمني", icon: CalendarClock },
-  { key: "bookings", label: "الحجوزات", icon: CalendarDays },
-  { key: "hearings", label: "الجلسات", icon: CalendarDays },
+  { key: "calendar", label: "الجدولة والمتابعة", icon: CalendarCheck },
   { key: "tasks", label: "المهام", icon: ClipboardList },
-  { key: "notifications", label: "التنبيهات", icon: BellRing },
-  { key: "governance", label: "الحوكمة", icon: ShieldCheck },
-  { key: "employees", label: "الموظفون", icon: Users },
-  { key: "clients", label: "العملاء", icon: UserRound },
   { key: "documents", label: "المستندات", icon: FileArchive },
+  { key: "clients", label: "العملاء", icon: UserRound },
+  { key: "employees", label: "الفريق", icon: Users },
+  { key: "notifications", label: "التنبيهات", icon: BellRing },
   { key: "reports", label: "التقارير", icon: BarChart3 },
+  { key: "governance", label: "الحوكمة", icon: ShieldCheck },
 ];
 
 export default function Sidebar({ activePage, onNavigate }) {

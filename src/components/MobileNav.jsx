@@ -3,12 +3,10 @@ import { Menu } from "lucide-react";
 const items = [
   ["dashboard", "الرئيسية"],
   ["cases", "القضايا"],
-  ["calendar", "التقويم"],
-  ["timeline", "التسلسل"],
-  ["bookings", "الحجوزات"],
+  ["calendar", "الجدولة"],
   ["tasks", "المهام"],
+  ["documents", "المستندات"],
   ["notifications", "التنبيهات"],
-  ["governance", "الحوكمة"],
   ["reports", "التقارير"],
 ];
 
