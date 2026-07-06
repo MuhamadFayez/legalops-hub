@@ -6,6 +6,7 @@ import {
   ClipboardList,
   FileArchive,
   Home,
+  Upload,
   ShieldCheck,
   Users,
   UserRound,
@@ -14,6 +15,7 @@ import {
 const navItems = [
   { key: "dashboard", label: "لوحة التحكم", icon: Home },
   { key: "cases", label: "القضايا", icon: BriefcaseBusiness },
+  { key: "caseImport", label: "استيراد القضايا", icon: Upload },
   { key: "calendar", label: "الجدولة والمتابعة", icon: CalendarCheck },
   { key: "tasks", label: "المهام", icon: ClipboardList },
   { key: "documents", label: "المستندات", icon: FileArchive },

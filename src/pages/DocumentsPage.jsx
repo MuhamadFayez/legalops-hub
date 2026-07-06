@@ -68,7 +68,7 @@ export default function DocumentsPage({ data, canCreate, onAddDocument }) {
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {documentTemplates.map((template) => {
-              const href = `/templates/${template.fileName}`;
+              const href = `${import.meta.env.BASE_URL}templates/${template.fileName}`;
               return (
                 <article key={template.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-3">

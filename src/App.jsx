@@ -4,6 +4,7 @@ import MobileNav from "./components/MobileNav";
 import Sidebar from "./components/Sidebar";
 import { roles } from "./data/seedData";
 import BookingsPage from "./pages/BookingsPage";
+import CaseImportPage from "./pages/CaseImportPage";
 import CaseDetailsPage from "./pages/CaseDetailsPage";
 import CasesPage from "./pages/CasesPage";
 import ClientsPage from "./pages/ClientsPage";
@@ -23,6 +24,7 @@ import { loadLegalOpsData, saveLegalOpsData } from "./utils/storage";
 const pageMeta = {
   dashboard: ["لوحة التحكم", "مؤشرات تشغيلية لحالة المكتب اليومية."],
   cases: ["القضايا", "إدارة القضايا ومتابعة درجات الخطورة والتحديثات."],
+  caseImport: ["استيراد القضايا", "رفع القضايا الحالية والقديمة من Excel مع اعتماد رقم القضية كمفتاح أساسي."],
   calendar: ["الجدولة والمتابعة", "تقويم وجلسات وحجوزات وتسلسل زمني في مساحة تشغيلية واحدة."],
   timeline: ["التسلسل الزمني", "عرض زمني موحد لأحداث القضايا والجلسات والمهام والحجوزات."],
   bookings: ["الحجوزات", "طلبات اجتماع أو مناقشة مع اعتماد وربط تلقائي بجدول الجلسات العام."],
@@ -77,6 +79,44 @@ export default function App() {
       updates: ["تم إنشاء القضية من النظام الداخلي"],
     };
     setData((current) => ({ ...current, cases: [newCase, ...current.cases] }));
+  }
+
+  function importCases(previewRows) {
+    const validRows = previewRows.filter((row) => row.case);
+    const existingNumbers = new Set(data.cases.map((item) => item.number));
+    const existingHearingIds = new Set(data.hearings.map((item) => item.id));
+    const summary = {
+      added: validRows.filter((row) => !existingNumbers.has(row.case.number)).length,
+      updated: validRows.filter((row) => existingNumbers.has(row.case.number)).length,
+      hearings: validRows.filter((row) => row.hearing && !existingHearingIds.has(row.hearing.id)).length,
+    };
+
+    setData((current) => {
+      const casesByNumber = new Map(current.cases.map((item) => [item.number, item]));
+      const nextCases = [...current.cases];
+      const nextHearings = [...current.hearings];
+      const hearingIds = new Set(nextHearings.map((item) => item.id));
+
+      validRows.forEach((row) => {
+        const existing = casesByNumber.get(row.case.number);
+        if (existing) {
+          const index = nextCases.findIndex((item) => item.id === existing.id);
+          nextCases[index] = { ...row.case, id: existing.id };
+        } else {
+          nextCases.unshift(row.case);
+          casesByNumber.set(row.case.number, row.case);
+        }
+
+        if (row.hearing && !hearingIds.has(row.hearing.id)) {
+          nextHearings.unshift(row.hearing);
+          hearingIds.add(row.hearing.id);
+        }
+      });
+
+      return { ...current, cases: nextCases, hearings: nextHearings };
+    });
+
+    return summary;
   }
 
   function addTask(form) {
@@ -210,6 +250,8 @@ export default function App() {
     switch (activePage) {
       case "cases":
         return <CasesPage data={data} canCreate={permissions.canCreate} onAddCase={addCase} onOpenCase={setSelectedCaseId} />;
+      case "caseImport":
+        return <CaseImportPage data={data} canCreate={permissions.canCreate} onImportCases={importCases} />;
       case "calendar":
         return (
           <SchedulePage

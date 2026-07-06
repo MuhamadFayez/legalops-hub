@@ -3,6 +3,7 @@ import { Menu } from "lucide-react";
 const items = [
   ["dashboard", "الرئيسية"],
   ["cases", "القضايا"],
+  ["caseImport", "استيراد"],
   ["calendar", "الجدولة"],
   ["tasks", "المهام"],
   ["documents", "المستندات"],
